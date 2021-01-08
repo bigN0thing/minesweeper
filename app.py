@@ -9,7 +9,6 @@ TYPE_0 = 0  # 普通格子
 TYPE_1 = 1  # 数字格子
 TYPE_2 = 2  # 雷格子
 
-
 class App:
     """
     扫雷
@@ -235,13 +234,16 @@ class App:
             self.master.quit()
 
 
-app = App(root)
-mainmenu = Menu(root)
-startmenu = Menu(mainmenu, tearoff = False)
-startmenu.add_command(label="简单", command=lambda: app.startGame(1))
-startmenu.add_command(label="一般", command=lambda: app.startGame(2))
-startmenu.add_command(label="困难", command=lambda: app.startGame(3))
-mainmenu.add_cascade(label="游戏难度", menu=startmenu)
-root['menu'] = mainmenu
+def main():
+    app = App(root)
+    mainmenu = Menu(root)
+    startmenu = Menu(mainmenu, tearoff = False)
+    startmenu.add_command(label="简单", command=lambda: app.startGame(1))
+    startmenu.add_command(label="一般", command=lambda: app.startGame(2))
+    startmenu.add_command(label="困难", command=lambda: app.startGame(3))
+    mainmenu.add_cascade(label="游戏难度", menu=startmenu)
+    root['menu'] = mainmenu
+    root.mainloop()
 
-root.mainloop()
+if __name__ == '__main__':
+    main()
