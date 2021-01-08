@@ -106,7 +106,7 @@ class App:
         """
         计时
         """
-        if self.clicked_count == 0:
+        if not self.game_start:
             return False
         self.time += 1
         self.labels['time'].config(text='计时: ' + str(self.time))
@@ -135,6 +135,7 @@ class App:
             self.gameOver(True)
 
         if self.clicked_count == 1:
+            self.game_start = True
             self.timer()
 
     def rightClick(self, x, y):
@@ -199,22 +200,23 @@ class App:
         self.clicked_count = 0  # 已点击数量
         self.flag_count = 0 # 已放置旗帜数量
         self.time = 0 # 清空计时
+        self.game_start = False
         self.setup()
 
     def gameOver(self, win=False):
         """
         游戏结束
         """
-        if not win:
-            for x in range(self.row):
-                for y in range(self.col):
-                    block = self.map[x][y]
-                    if block['show'] == 0:
-                        if block['flag'] == 1 and block['type'] != TYPE_2:  # 错误
-                            block['btn'].config(image=self.images['wrong'])
+        self.game_start = False
+        for x in range(self.row):
+            for y in range(self.col):
+                block = self.map[x][y]
+                if block['show'] == 0:
+                    if block['flag'] == 1 and block['type'] != TYPE_2:  # 错误
+                        block['btn'].config(image=self.images['wrong'])
 
-                        if block['flag'] == 0 and block['type'] == TYPE_2:  # 显示所有雷
-                            block['btn'].config(image=self.images['mine'])
+                    if block['flag'] == 0 and block['type'] == TYPE_2:  # 显示所有雷
+                        block['btn'].config(image=self.images['mine'])
 
         msg = '你赢了, 用时' + str(self.time) + ' 是否继续' if win else '你输了, 是否继续'
         rs = tkMessageBox.askyesno('游戏结束', msg)
