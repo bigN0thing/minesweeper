@@ -2,10 +2,6 @@ from tkinter import *
 from tkinter import messagebox as tkMessageBox
 import random
 
-ROW = 9
-COL = 9
-MINE_COUNT = 10
-
 root = Tk()
 root.title('天天扫雷')
 
@@ -21,6 +17,10 @@ class App:
 
     def __init__(self, master):
         self.level = 1
+        self.clicked_count = 0  # 已点击数量
+        self.flag_count = 0 # 已放置旗帜数量
+        self.time = 0 # 清空计时
+        self.game_start = False
         self.master = master
         self.frame = Frame(master)  # 主区块
         self.label_frame = Frame(master)  # 标签区块
@@ -47,10 +47,19 @@ class App:
             TYPE_1: self.clickNumber,
             TYPE_2: self.clickMine
         }
+
         # 开始游戏
         self.frame.pack()
         self.label_frame.pack()
-        self.startGame()
+        self.setup()
+
+        # 其他标签
+        self.labels = {
+            'time': Label(self.label_frame, text='计时: 0'),
+            'flag': Label(self.label_frame, text='剩余: ' + str(self.mine_count))
+        }
+        self.labels['time'].grid(row=self.row + 1, column=0)
+        self.labels['flag'].grid(row=self.row + 1, column=self.col // 2)
 
     def setup(self):
         """
@@ -76,8 +85,8 @@ class App:
             for i in range(self.row)]
 
         # 初始化雷和数字
-        self.mines = random.sample(sum(self.map, []), self.mine_count)
-        for mine in self.mines:
+        mines = random.sample(sum(self.map, []), self.mine_count)
+        for mine in mines:
             self.map[mine['x']][mine['y']]['type'] = TYPE_2
             neighbors = self.getNeighbors(mine['x'], mine['y'])
             for n in neighbors:
@@ -93,15 +102,11 @@ class App:
                 btn.bind('<Button-3>', self.rightClick(x, y))
                 btn.grid(row=x, column=y)
                 self.map[x][y]['btn'] = btn
-
-        # 其他标签
-        self.labels = {
-            'time': Label(self.label_frame, text='计时: 0'),
-            'flag': Label(self.label_frame, text='剩余: ' + str(self.mine_count))
-        }
-        self.labels['time'].grid(row=self.row + 1, column=0)
-        self.labels['flag'].grid(row=self.row + 1, column=self.col // 2)
     
+    def resetLabel(self):
+        self.labels['time'].config(text='计时: ' + str(self.time))
+        self.labels['flag'].config(text='剩余: ' + str(self.mine_count))
+
     def timer(self):
         """
         计时
@@ -119,8 +124,8 @@ class App:
         :param y: y坐标
         :return list((x, y))
         """
-        return [(i, j) for i in range(max(0, x - 1), min(self.col - 1, x + 1) + 1)
-                for j in range(max(0, y - 1), min(self.row - 1, y + 1) + 1) if i != x or j != y]
+        return [(i, j) for i in range(max(0, x - 1), min(self.row - 1, x + 1) + 1)
+                for j in range(max(0, y - 1), min(self.col - 1, y + 1) + 1) if i != x or j != y]
 
     def leftClick(self, x, y):
         return lambda Click: self._leftClick(x, y)
@@ -201,7 +206,11 @@ class App:
         self.flag_count = 0 # 已放置旗帜数量
         self.time = 0 # 清空计时
         self.game_start = False
+        self.map = []
+        for widget in self.frame.winfo_children():
+            widget.destroy()
         self.setup()
+        self.resetLabel()
 
     def gameOver(self, win=False):
         """
@@ -228,10 +237,10 @@ class App:
 
 app = App(root)
 mainmenu = Menu(root)
-startmenu = Menu(mainmenu)
+startmenu = Menu(mainmenu, tearoff = False)
 startmenu.add_command(label="简单", command=lambda: app.startGame(1))
-startmenu.add_command(label="困难", command=lambda: app.startGame(2))
-startmenu.add_command(label="地域", command=lambda: app.startGame(3))
+startmenu.add_command(label="一般", command=lambda: app.startGame(2))
+startmenu.add_command(label="困难", command=lambda: app.startGame(3))
 mainmenu.add_cascade(label="游戏难度", menu=startmenu)
 root['menu'] = mainmenu
 
